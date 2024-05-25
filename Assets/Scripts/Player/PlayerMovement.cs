@@ -42,7 +42,7 @@ public class PlayerMovement : MonoBehaviour
 
         while(steps > 0)
         {
-            Vector3 nextPos = currentRoute.childNodeList[steps + 1].position;
+            Vector3 nextPos = currentRoute.childNodeList[RoutePos + 1].position;
             while (MoveToNextNode(nextPos)) { yield return null; }
 
             yield return new WaitForSeconds(0.1f);
