@@ -1,17 +1,31 @@
+using System.Collections.Generic;
 using TMPro;
+using UnityEditor.SearchService;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using static GameMN;
 
 public class UIMN : Singleton_Mono_Method<UIMN>
 {
     [SerializeField] TextMeshProUGUI DiceNumber;
+    [SerializeField] Text message;
     [SerializeField] Button RollButton;
     int number;
-
-    private void Start()
+    
+    public void SetActiveGameOverUI(GameObject panel)
     {
-        
+        panel.SetActive(true);
     }
+    public void ShowWinMessage(string winner)
+    {
+        message.text = winner + " has won this round!";
+    }
+    public void BackBtn()
+    {
+        SceneManager.LoadScene("GamePlay");
+    }
+    
     public void ActiveRollButton(bool status)
     {
         RollButton.interactable = status;

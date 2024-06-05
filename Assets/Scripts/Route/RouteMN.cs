@@ -8,7 +8,6 @@ using Unity.VisualScripting;
 
 public class RouteMN : Singleton_Mono_Method<RouteMN>
 {
-
     [Header("Constant variable for special node")]
     public const int MaxSpecialNodes = 6;
     public const int MaxSpecialNodesEnd = 5;
@@ -92,6 +91,7 @@ public class RouteMN : Singleton_Mono_Method<RouteMN>
                 n_type.type = randomType;
             }
             else { n_type.type = NodeType.Normal; }
+            SpecialNodeMN.d_Instance.AssignMaterial();
         }
     }
 
