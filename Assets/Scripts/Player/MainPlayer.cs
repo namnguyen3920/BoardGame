@@ -7,7 +7,7 @@ public class MainPlayer : PlayerController
 {    
     int steps;
     int doneSteps = 0;
-    [SerializeField] float movingSpeed = 2f;
+    [SerializeField] float movingSpeed = 4f;
 
     public void MakeTurn(int dice_number)
     {
@@ -25,8 +25,7 @@ public class MainPlayer : PlayerController
 
     public override IEnumerator MovingPlayerBackward(int back_steps)
     {
-        yield return new WaitForSeconds(1f);
-        Debug.Log("Moving backward");
+        yield return new WaitForSeconds(0.7f);
         reachDes = false;
         isMoving = true;
 
@@ -54,7 +53,6 @@ public class MainPlayer : PlayerController
 
     public override IEnumerator MovingPlayer(int steps)
     {
-        Debug.Log("Moving forward");
         reachDes = false;
         isMoving = true;
 
@@ -72,23 +70,18 @@ public class MainPlayer : PlayerController
             doneSteps++;
         }
 
+        if (doneSteps == route.childNodeList.Count - 1)
+        {
+            StartCoroutine(GameMN.d_Instance.ReportWinner());
+            yield return new WaitForSeconds(0.3f);
+        }
+
         CheckingNode();
 
         yield return new WaitForSeconds(0.1f);
 
         isMoving = false;
         reachDes = true;
-
-        if (doneSteps == route.childNodeList.Count - 1)
-        {
-            GameMN.d_Instance.ReportWinner();
-            yield break;
-        }
-        GameMN.d_Instance.state = States.SwitchPlayer;
-        /*if (isMovingForward)
-        {
-            GameMN.d_Instance.state = States.SwitchPlayer;
-        }*/
     }
     bool MoveToNextNodeTowards(Vector3 targetNode)
     {

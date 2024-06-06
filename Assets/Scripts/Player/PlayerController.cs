@@ -32,28 +32,26 @@ public abstract class PlayerController : Singleton_Mono_Method<PlayerController>
     public abstract IEnumerator MovingPlayerBackward(int steps);
     protected void CheckingNode()
     {
-        if (nodeList[RoutePos].isSpecialNode)
+        switch (nodeList[RoutePos].type)
         {
-            switch (nodeList[RoutePos].type)
-            {
-                case NodeType.Fail:
-                    {
-                        isMovingForward = false;
-                        StartCoroutine(MovingPlayerBackward(backward_steps));
-                        FailNode.DoEffect();
-                        GameMN.d_Instance.SetFailCounter(FailNode.GetCounter());
-                        break;
-                    }
-                case NodeType.Bonus:
-                    {
-                        GameMN.d_Instance.state = States.RollDice;
-                        BonusNode.DoEffect();
-                        GameMN.d_Instance.SetBonusCounter(BonusNode.GetCounter());
-                        break;
-                    }
-                default:
+            case NodeType.Fail:
+                {
+                    isMovingForward = false;
+                    StartCoroutine(MovingPlayerBackward(backward_steps));
+                    FailNode.DoEffect();
+                    GameMN.d_Instance.SetFailCounter(FailNode.GetCounter());
                     break;
-            }
+                }
+            case NodeType.Bonus:
+                {
+                    GameMN.d_Instance.state = States.RollDice;
+                    BonusNode.DoEffect();
+                    GameMN.d_Instance.SetBonusCounter(BonusNode.GetCounter());
+                    break;
+                }
+            default:
+                GameMN.d_Instance.state = States.SwitchPlayer;
+                break;
         }
     }
 }

@@ -56,8 +56,8 @@ MeshRenderer:
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
   m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
@@ -97,10 +97,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aebc895d10a09494d9c3de144fd17d81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nodeId: 0
-  moveAllowed: 1
   numberText: {fileID: 7456439822287245876}
-  connectedNode: {fileID: 0}
+  isSpecialNode: 0
+  type: 0
 --- !u!1 &1778927275076912692
 GameObject:
   m_ObjectHideFlags: 0

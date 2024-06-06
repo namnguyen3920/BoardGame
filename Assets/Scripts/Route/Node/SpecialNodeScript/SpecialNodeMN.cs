@@ -7,7 +7,6 @@ public class SpecialNodeMN : Singleton_Mono_Method<SpecialNodeMN>
     [SerializeField] Material failMat;
     [SerializeField] Material default_mat;
     [SerializeField] RouteMN route;
-    public MainPlayer player;
     public void AssignMaterial()
     {
         if(route.childNodeList.Count == 0)
@@ -38,8 +37,5 @@ public class SpecialNodeMN : Singleton_Mono_Method<SpecialNodeMN>
             }
 
         }
-        
     }
-
-
 }

@@ -11,8 +11,7 @@ public class Bonus : MonoBehaviour, ISpecialNode
 
     private void BonusNodeLogic()
     {
-        Debug.Log("Bonus Node");
-        //GameMN.d_Instance.state = States.RollDice;
+        b_counter++;
     }
     public int GetCounter()
     {
