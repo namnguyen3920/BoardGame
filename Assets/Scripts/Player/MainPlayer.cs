@@ -87,6 +87,4 @@ public class MainPlayer : PlayerController
     {
         return targetNode != (transform.position = Vector3.MoveTowards(transform.position, targetNode, movingSpeed * Time.deltaTime));
     }
-
-
 }

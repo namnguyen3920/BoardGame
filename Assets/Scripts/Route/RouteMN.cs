@@ -9,7 +9,7 @@ using Unity.VisualScripting;
 public class RouteMN : Singleton_Mono_Method<RouteMN>
 {
     [Header("Constant variable for special node")]
-    public const int MaxSpecialNodes = 6;
+    [SerializeField] private int MaxSpecialNodes = 6;
     public const int MaxSpecialNodesEnd = 5;
     public const int SpecialNodesStarter = 5;
 
@@ -17,7 +17,7 @@ public class RouteMN : Singleton_Mono_Method<RouteMN>
     [Header("Node data-structure management")]
     Node[] childNodes;
     public List<Node> childNodeList = new List<Node>();
-    public List<Node> specialNodeList = new List<Node>();   
+    public List<Node> specialNodeList = new List<Node>();
 
 
     private void Start()
@@ -69,7 +69,7 @@ public class RouteMN : Singleton_Mono_Method<RouteMN>
     }
     public void SetNodeProperties()
     {
-        foreach (Node child in childNodeList)
+        /*foreach (Node child in childNodeList)
         {
             foreach (Node node in specialNodeList)
             {
@@ -78,6 +78,10 @@ public class RouteMN : Singleton_Mono_Method<RouteMN>
                     node.isSpecialNode = true;
                 }
             }
+        }*/
+        foreach (Node node in specialNodeList)
+        {
+            node.isSpecialNode = true;
         }
     }
     public void SetNodeType()
