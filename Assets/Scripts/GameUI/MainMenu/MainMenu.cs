@@ -50,7 +50,6 @@ public class MainMenu : Singleton_Mono_Method<MainMenu>
         SetStatusMainMenuPanel(false);
     }
 
-    
     //Updating Status
     void SetStatusMainMenu(bool status)
     {
