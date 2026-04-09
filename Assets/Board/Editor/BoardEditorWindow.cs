@@ -71,7 +71,6 @@ public class BoardEditorWindow : EditorWindow
 
         BuildLookup();
 
-        DrawToolBar();
         DrawSliderRow();
         DrawPaletteStrip();
         DrawCanvas();
@@ -115,22 +114,6 @@ public class BoardEditorWindow : EditorWindow
         }
     }
 
-    private void DrawToolBar()
-    {
-        GUILayout.Space(6);
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.Space(8);
-
-        DrawToolIconButton(Tool.Paint, "Grid.PaintTool", "Paint (B)");
-        DrawToolIconButton(Tool.Erase, "Grid.EraserTool", "Erase (E)");
-        DrawToolIconButton(Tool.Fill, "Grid.FillTool", "Fill (G)");
-        DrawToolIconButton(Tool.Eyedropper, "Grid.PickingTool", "Eyedropper (I)");
-
-        GUILayout.FlexibleSpace();
-        EditorGUILayout.EndHorizontal();
-        GUILayout.Space(4);
-    }
-
     private void DrawSliderRow()
     {
         EditorGUILayout.BeginHorizontal();
@@ -149,24 +132,6 @@ public class BoardEditorWindow : EditorWindow
         GUILayout.Space(8);
         EditorGUILayout.EndHorizontal();
         GUILayout.Space(4);
-    }
-
-    private void DrawToolIconButton(Tool tool, string iconName, string tooltip)
-    {
-        bool active = currentTool == tool;
-        Color prev = GUI.backgroundColor;
-        if (active) GUI.backgroundColor = new Color(0.45f, 0.80f, 1f);
-
-        GUIContent iconContent = EditorGUIUtility.IconContent(iconName);
-        GUIContent content = iconContent != null && iconContent.image != null
-            ? new GUIContent(iconContent.image, tooltip)
-            : new GUIContent(tool.ToString().Substring(0, 1), tooltip);
-
-        if (GUILayout.Button(content, GUILayout.Width(44), GUILayout.Height(36)))
-        {
-            currentTool = tool;
-        }
-        GUI.backgroundColor = prev;
     }
 
     private static void DrawToolbarSeparator()
@@ -274,7 +239,30 @@ public class BoardEditorWindow : EditorWindow
 
     private void DrawCanvas()
     {
-        EditorGUILayout.BeginVertical();
+        Rect canvasContainer = EditorGUILayout.BeginVertical();
+
+        Rect paintBtnRect, eraseBtnRect, removeAllRect;
+        bool overlayValid = canvasContainer.width > 0f;
+        if (overlayValid)
+        {
+            const float btnSize = 38f;
+            float totalW = btnSize * 3f;
+            float ox = canvasContainer.xMax - 12f - totalW;
+            float oy = canvasContainer.y + 12f;
+            paintBtnRect = new Rect(ox, oy, btnSize, btnSize);
+            eraseBtnRect = new Rect(ox + btnSize, oy, btnSize, btnSize);
+            removeAllRect = new Rect(ox + btnSize * 2f, oy, btnSize, btnSize);
+        }
+        else
+        {
+            paintBtnRect = eraseBtnRect = removeAllRect = Rect.zero;
+        }
+
+        Vector2 mousePos = Event.current.mousePosition;
+        bool mouseOverOverlay = overlayValid && (
+            paintBtnRect.Contains(mousePos)
+            || eraseBtnRect.Contains(mousePos)
+            || removeAllRect.Contains(mousePos));
 
         canvasScroll = EditorGUILayout.BeginScrollView(canvasScroll, GUI.skin.box);
 
@@ -331,10 +319,12 @@ public class BoardEditorWindow : EditorWindow
                 float py = cell * Mathf.Sqrt(3f) * (r + q * 0.5f);
                 Vector2 center = origin + new Vector2(px, py);
 
-                bool exists = _lookup.TryGetValue((q, r), out int cellIdx);
+                bool exists = _lookup.TryGetValue((q, r), out int cellIdx)
+                    && cellIdx >= 0
+                    && cellIdx < target.cells.Count;
                 short val = exists ? target.cells[cellIdx].value : (short)0;
 
-                bool hit = PointInFlatHex(e.mousePosition, center, cell);
+                bool hit = !mouseOverOverlay && PointInFlatHex(e.mousePosition, center, cell);
                 if (hit)
                 {
                     newHoverValid = true;
@@ -348,6 +338,7 @@ public class BoardEditorWindow : EditorWindow
                         if (ApplyTool(q, r, exists, val, e.button))
                         {
                             changed = true;
+                            BuildLookup();
                         }
                         e.Use();
                     }
@@ -360,6 +351,14 @@ public class BoardEditorWindow : EditorWindow
         EditorGUILayout.EndScrollView();
         EditorGUILayout.EndVertical();
 
+        if (overlayValid)
+        {
+            DrawOverlayBackdrop(paintBtnRect, removeAllRect);
+            DrawOverlayToolButton(paintBtnRect, Tool.Paint, "Grid.PaintTool", "Paint (B)");
+            DrawOverlayToolButton(eraseBtnRect, Tool.Erase, "Grid.EraserTool", "Erase (E)");
+            DrawOverlayRemoveAllButton(removeAllRect);
+        }
+
         hoverValid = newHoverValid;
         hoverQ = newHoverQ;
         hoverR = newHoverR;
@@ -370,6 +369,58 @@ public class BoardEditorWindow : EditorWindow
         {
             EditorUtility.SetDirty(target);
             Repaint();
+        }
+    }
+
+    private static void DrawOverlayBackdrop(Rect firstBtn, Rect lastBtn)
+    {
+        if (Event.current.type != EventType.Repaint) return;
+        Rect backdrop = new Rect(
+            firstBtn.x - 6f,
+            firstBtn.y - 6f,
+            (lastBtn.xMax - firstBtn.x) + 12f,
+            firstBtn.height + 12f);
+        EditorGUI.DrawRect(backdrop, new Color(0.10f, 0.10f, 0.12f, 0.85f));
+    }
+
+    private void DrawOverlayToolButton(Rect rect, Tool tool, string iconName, string tooltip)
+    {
+        bool active = currentTool == tool;
+        Color prev = GUI.backgroundColor;
+        if (active) GUI.backgroundColor = new Color(0.45f, 0.80f, 1f);
+
+        GUIContent iconContent = EditorGUIUtility.IconContent(iconName);
+        GUIContent content = iconContent != null && iconContent.image != null
+            ? new GUIContent(iconContent.image, tooltip)
+            : new GUIContent(tool.ToString().Substring(0, 1), tooltip);
+
+        if (GUI.Button(rect, content))
+        {
+            currentTool = tool;
+        }
+        GUI.backgroundColor = prev;
+    }
+
+    private void DrawOverlayRemoveAllButton(Rect rect)
+    {
+        GUIContent iconContent = EditorGUIUtility.IconContent("TreeEditor.Trash");
+        GUIContent content = iconContent != null && iconContent.image != null
+            ? new GUIContent(iconContent.image, "Remove All — clear every cell from the board")
+            : new GUIContent("Clear", "Remove All — clear every cell from the board");
+
+        if (GUI.Button(rect, content))
+        {
+            if (EditorUtility.DisplayDialog(
+                "Remove All",
+                "Remove every cell from the board?",
+                "Remove", "Cancel"))
+            {
+                Undo.RecordObject(target, "Remove All Cells");
+                target.Clear();
+                EditorUtility.SetDirty(target);
+                BuildLookup();
+                Repaint();
+            }
         }
     }
 
