@@ -19,7 +19,7 @@ public class MainPlayer : PlayerController
         }
         else
         {
-            GameMN.d_Instance.state = States.SwitchPlayer;
+            GameMN.Instance.state = States.SwitchPlayer;
         }
     }
 
@@ -72,7 +72,7 @@ public class MainPlayer : PlayerController
 
         if (doneSteps == route.childNodeList.Count - 1)
         {
-            StartCoroutine(GameMN.d_Instance.ReportWinner());
+            StartCoroutine(GameMN.Instance.ReportWinner());
             yield return new WaitForSeconds(0.3f);
         }
 

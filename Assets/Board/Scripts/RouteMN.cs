@@ -6,7 +6,7 @@ using Random = UnityEngine.Random;
 using Enum = System.Enum;
 using Unity.VisualScripting;
 
-public class RouteMN : Singleton_Mono_Method<RouteMN>
+public class RouteMN : MonoSingleton<RouteMN>
 {
     [Header("Constant variable for special node")]
     [SerializeField] private int MaxSpecialNodes = 6;
@@ -95,7 +95,7 @@ public class RouteMN : Singleton_Mono_Method<RouteMN>
                 n_type.type = randomType;
             }
             else { n_type.type = NodeType.Normal; }
-            SpecialNodeMN.d_Instance.AssignMaterial();
+            SpecialNodeMN.Instance.AssignMaterial();
         }
     }
 

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class DiceMN : Singleton_Mono_Method<DiceMN>
+public class DiceMN : MonoSingleton<DiceMN>
 {
     private const int MAXDICE_NUMB = 6;
     int dice_number;

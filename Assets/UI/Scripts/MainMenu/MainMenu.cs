@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MainMenu : Singleton_Mono_Method<MainMenu>
+public class MainMenu : MonoSingleton<MainMenu>
 {
     [Header("For Background")]
     [SerializeField] RawImage img;
@@ -35,7 +35,7 @@ public class MainMenu : Singleton_Mono_Method<MainMenu>
     }
     public void PvPModeBtn()
     {
-        foreach(var player in GameMN.d_Instance.playerList)
+        foreach(var player in GameMN.Instance.playerList)
         {
             player.playerType = GameMN.Player.PlayerType.PLAYER;
         }
@@ -43,7 +43,7 @@ public class MainMenu : Singleton_Mono_Method<MainMenu>
     }
     public void BvBModeBtn()
     {
-        foreach (var player in GameMN.d_Instance.playerList)
+        foreach (var player in GameMN.Instance.playerList)
         {
             player.playerType = GameMN.Player.PlayerType.BOT;
         }

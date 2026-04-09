@@ -1,7 +1,7 @@
 
 using UnityEngine;
 
-public class SpecialNodeMN : Singleton_Mono_Method<SpecialNodeMN>
+public class SpecialNodeMN : MonoSingleton<SpecialNodeMN>
 {
     [SerializeField] Material bonusMat;
     [SerializeField] Material failMat;

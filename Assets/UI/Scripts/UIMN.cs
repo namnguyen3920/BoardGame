@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class UIMN : Singleton_Mono_Method<UIMN>
+public class UIMN : MonoSingleton<UIMN>
 {
     [Header("In Game Menu")]
     [SerializeField] TextMeshProUGUI DiceNumber;

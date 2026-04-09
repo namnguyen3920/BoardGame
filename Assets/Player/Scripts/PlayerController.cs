@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class PlayerController : Singleton_Mono_Method<PlayerController>
+public abstract class PlayerController : MonoSingleton<PlayerController>
 {
     [Header("GetComponent Part")]
     [SerializeField] protected RouteMN route;
@@ -39,18 +39,18 @@ public abstract class PlayerController : Singleton_Mono_Method<PlayerController>
                     isMovingForward = false;
                     StartCoroutine(MovingPlayerBackward(backward_steps));
                     FailNode.DoEffect();
-                    GameMN.d_Instance.SetFailCounter(FailNode.GetCounter());
+                    GameMN.Instance.SetFailCounter(FailNode.GetCounter());
                     break;
                 }
             case NodeType.Bonus:
                 {
-                    GameMN.d_Instance.state = States.RollDice;
+                    GameMN.Instance.state = States.RollDice;
                     BonusNode.DoEffect();
-                    GameMN.d_Instance.SetBonusCounter(BonusNode.GetCounter());
+                    GameMN.Instance.SetBonusCounter(BonusNode.GetCounter());
                     break;
                 }
             default:
-                GameMN.d_Instance.state = States.SwitchPlayer;
+                GameMN.Instance.state = States.SwitchPlayer;
                 break;
         }
     }

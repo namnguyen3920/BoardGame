@@ -8,7 +8,7 @@ public enum States
     RollDice,
     SwitchPlayer
 }
-public class GameMN : Singleton_Mono_Method<GameMN>
+public class GameMN : MonoSingleton<GameMN>
 {
     public List<Player> playerList = new();
     public List<Player> playerRanking = new();
@@ -28,12 +28,12 @@ public class GameMN : Singleton_Mono_Method<GameMN>
     IEnumerator RollDiceDelay()
     {
         yield return new WaitForSeconds(0.5f);
-        dice_number = DiceMN.d_Instance.Roll();
-        UIMN.d_Instance.UpdatingRolling(dice_number);
+        dice_number = DiceMN.Instance.Roll();
+        UIMN.Instance.UpdatingRolling(dice_number);
         
         playerList[activePlayer].turns++;
         playerList[activePlayer].main.MakeTurn(dice_number);
-        UIMN.d_Instance.ShowTurns(playerList[activePlayer].playerName);
+        UIMN.Instance.ShowTurns(playerList[activePlayer].playerName);
     }
 
     public void PlayerRollDice()
@@ -41,7 +41,7 @@ public class GameMN : Singleton_Mono_Method<GameMN>
         if (playerList == null) { return; }
         else
         {
-            UIMN.d_Instance.ActiveRollButton(false);
+            UIMN.Instance.ActiveRollButton(false);
             StartCoroutine(RollDiceDelay());
         }
     }
@@ -51,16 +51,16 @@ public class GameMN : Singleton_Mono_Method<GameMN>
         RankingPlayer(playerList[activePlayer]);
         if (playerList.Count == 0)
         {
-            UIMN.d_Instance.SetStatusEGPanel(true);
-            UIMN.d_Instance.SetStatusGOPanel(true);
-            UIMN.d_Instance.ShowWinMessage(playerRanking[0].playerName);
+            UIMN.Instance.SetStatusEGPanel(true);
+            UIMN.Instance.SetStatusGOPanel(true);
+            UIMN.Instance.ShowWinMessage(playerRanking[0].playerName);
             foreach (Player player in playerRanking)
             {
-                RectTransform playerStats = Instantiate(UIMN.d_Instance.PlayerStatsContent);
-                UIMN.d_Instance.UpdatingStatic(player.rank, player.playerName, player.turns, player.bonusSteps, player.failSteps);
+                RectTransform playerStats = Instantiate(UIMN.Instance.PlayerStatsContent);
+                UIMN.Instance.UpdatingStatic(player.rank, player.playerName, player.turns, player.bonusSteps, player.failSteps);
                 yield return new WaitForSeconds(0.5f);
-                playerStats.transform.SetParent(UIMN.d_Instance.ScrollViewContent, false);
-                UIMN.d_Instance.PlayerStatsContent.gameObject.SetActive(true);
+                playerStats.transform.SetParent(UIMN.Instance.ScrollViewContent, false);
+                UIMN.Instance.PlayerStatsContent.gameObject.SetActive(true);
             }
         }
     }
@@ -126,7 +126,7 @@ public class GameMN : Singleton_Mono_Method<GameMN>
                         break;
                     case States.RollDice:
                         {
-                            UIMN.d_Instance.ActiveRollButton(true);
+                            UIMN.Instance.ActiveRollButton(true);
                             state = States.Waiting;
                     }
                         break;
