@@ -14,11 +14,11 @@
   <Project Path="com.unity.cinemachine.editor.csproj" />
   <Project Path="Unity.TestTools.CodeCoverage.Editor.csproj" />
   <Project Path="Unity.VisualScripting.State.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.Performance.Profile-Analyzer.Editor.csproj" />
   <Project Path="Unity.VisualScripting.SettingsProvider.Editor.csproj" />
   <Project Path="Unity.TestTools.CodeCoverage.Editor.OpenCover.Mono.Reflection.csproj" />
   <Project Path="Unity.Settings.Editor.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.CollabProxy.Editor.csproj" />
   <Project Path="Unity.VisualScripting.DocCodeExamples.csproj" />
   <Project Path="Unity.VisualScripting.Shared.Editor.csproj" />
