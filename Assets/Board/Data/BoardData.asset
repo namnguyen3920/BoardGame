@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fcc216f5e2a25d4cacb5d99001679bf, type: 3}
+  m_Name: BoardData
+  m_EditorClassIdentifier: Assembly-CSharp::BoardData
+  cells:
+  - q: 1
+    r: -1
+    value: 5
+  - q: 2
+    r: -2
+    value: 4
+  - q: 3
+    r: -2
+    value: 1
+  - q: 4
+    r: -2
+    value: 3
+  - q: 4
+    r: -1
+    value: 3
+  - q: 4
+    r: 0
+    value: 3
+  - q: 4
+    r: 1
+    value: 3
+  - q: 3
+    r: 1
+    value: 3
+  - q: 2
+    r: 1
+    value: 3
+  - q: 3
+    r: 0
+    value: 3
+  - q: 3
+    r: -1
+    value: 1
+  - q: 2
+    r: 0
+    value: 6
+  - q: 2
+    r: -1
+    value: 3
+  - q: 1
+    r: 0
+    value: 6
+  - q: 2
+    r: -3
+    value: 1
+  - q: 1
+    r: 1
+    value: 3
+  - q: 5
+    r: -1
+    value: 3
+  - q: 5
+    r: -2
+    value: 3
+  - q: 5
+    r: 0
+    value: 3
+  - q: 5
+    r: 1
+    value: 3

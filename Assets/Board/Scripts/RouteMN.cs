@@ -69,16 +69,6 @@ public class RouteMN : MonoSingleton<RouteMN>
     }
     public void SetNodeProperties()
     {
-        /*foreach (Node child in childNodeList)
-        {
-            foreach (Node node in specialNodeList)
-            {
-                if (node.GetNodeID() == child.GetNodeID())
-                {
-                    node.isSpecialNode = true;
-                }
-            }
-        }*/
         foreach (Node node in specialNodeList)
         {
             node.isSpecialNode = true;

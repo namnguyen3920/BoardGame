@@ -23,7 +23,6 @@ public class MainMenu : MonoSingleton<MainMenu>
         img.uvRect = new Rect(img.uvRect.position + new Vector2(x, y) * Time.deltaTime, img.uvRect.size);
     }
 
-    //Button
     public void StartGameBtn()
     {
         SetStatusMainMenu(false);
@@ -50,7 +49,6 @@ public class MainMenu : MonoSingleton<MainMenu>
         SetStatusMainMenuPanel(false);
     }
 
-    //Updating Status
     void SetStatusMainMenu(bool status)
     {
         mmContent.SetActive(status);

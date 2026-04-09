@@ -43,7 +43,6 @@ public class UIMN : MonoSingleton<UIMN>
     }
 
 
-    //ACTIVE PANEL
     public void SetStatusStatisticPanel(bool status)
     {
         StaticMenu.SetActive(status);
@@ -62,10 +61,8 @@ public class UIMN : MonoSingleton<UIMN>
     }
 
 
-    //UPDATING DATA
     public void UpdatingStatic(int place_number, string name, int turn_number, int bonus_number, int fail_number)
     {
-        //ClearData();
         this.place = place_number;
         this.turn = turn_number;
         this.bonus = bonus_number;
@@ -102,7 +99,6 @@ public class UIMN : MonoSingleton<UIMN>
     }
 
 
-    //BUTTON LOGIC
     public void CloseSettingBtn()
     {
         SettingsMenu.SetActive(false);
