@@ -1,0 +1,42 @@
+# Unity Folders
+/[Ll]ibrary/
+/[Tt]emp/
+/[Obj]/
+/[Build]/
+/[Builds]/
+/[Logs]/
+/[UserSettings]/
+/[MemoryCaptures]/
+
+# Assets rác & Asset Store
+Assets/Plugins/
+Assets/AssetStoreTools/
+**/WebGlBuild/
+
+# Media Files (Claude không đọc được)
+*.meta
+*.unity
+*.prefab
+*.mat
+*.fbx
+*.png
+*.jpg
+*.tga
+*.wav
+*.mp3
+*.mp4
+*.asset
+*.controller
+*.overrideController
+
+# IDE & OS
+.vs/
+.idea/
+.vscode/
+.DS_Store
+*.suo
+*.user
+*.userprefs
+*.sln
+*.csproj
+*.unityproj
