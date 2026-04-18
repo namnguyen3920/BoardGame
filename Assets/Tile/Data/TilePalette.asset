@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TilePalette
   prefabs:
   - {fileID: 4929663004030081633, guid: 8de22c198f9b76645938b4a30ae731ae, type: 3}
-  - {fileID: 6713589637814215209, guid: 1f5dd71209bc749429444747a950b5e9, type: 3}
+  - {fileID: 5269408468523872789, guid: d38fab9757b494b4fa621ba46e583d0d, type: 3}
   - {fileID: 8230224349292321351, guid: 42b3366a4a09ade439925a1ed2eeda66, type: 3}
   - {fileID: 1619574201287738774, guid: 9d861fb761ce2b34883ce0c386f6d4cd, type: 3}
   - {fileID: 8953961267122823303, guid: 412d52c4c394f6544ba10eb44aa84705, type: 3}
