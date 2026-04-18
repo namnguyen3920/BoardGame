@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fcc216f5e2a25d4cacb5d99001679bf, type: 3}
   m_Name: BoardData
   m_EditorClassIdentifier: Assembly-CSharp::BoardData
-  layers: []
+  layers:
+  - {fileID: 11400000, guid: 48bd1f88919341e4992bb2f9ac8f2c86, type: 2}
