@@ -15,55 +15,35 @@ MonoBehaviour:
   cells:
   - q: 0
     r: 0
-    value: 1
-    rotation: 2
+    value: 0
+    rotation: 4
   - q: 0
     r: -1
-    value: 1
-    rotation: 2
-  - q: 1
-    r: -1
-    value: 1
-    rotation: 2
-  - q: 2
-    r: -3
-    value: 2
-    rotation: 2
-  - q: 2
-    r: -4
-    value: 2
-    rotation: 2
-  - q: 1
-    r: -2
-    value: 1
-    rotation: 2
-  - q: 2
-    r: -2
-    value: 1
-    rotation: 2
-  - q: 1
-    r: -3
-    value: 1
-    rotation: 2
-  - q: 0
-    r: -2
     value: 0
     rotation: 2
-  - q: 0
+  - q: 1
+    r: -1
+    value: 0
+    rotation: 1
+  - q: 2
     r: -3
     value: 0
     rotation: 2
   - q: 1
-    r: -4
-    value: 2
+    r: -2
+    value: 0
     rotation: 2
-  - q: 3
-    r: -5
-    value: 2
-    rotation: 2
-  - q: 4
-    r: -5
-    value: 2
+  - q: 2
+    r: -2
+    value: 0
+    rotation: 1
+  - q: 1
+    r: -3
+    value: 0
+    rotation: 4
+  - q: 0
+    r: -3
+    value: 0
     rotation: 2
   - q: 5
     r: -5
@@ -83,9 +63,93 @@ MonoBehaviour:
     rotation: 2
   - q: 3
     r: -3
-    value: 2
+    value: 0
     rotation: 2
+  - q: 4
+    r: -5
+    value: 2
+    rotation: 5
+  - q: 3
+    r: -5
+    value: 2
+    rotation: 0
   - q: 3
     r: -4
     value: 2
+    rotation: 2
+  - q: 2
+    r: -4
+    value: 1
+    rotation: 5
+  - q: 3
+    r: -2
+    value: 2
+    rotation: 2
+  - q: 5
+    r: -6
+    value: 2
+    rotation: 2
+  - q: 4
+    r: -6
+    value: 2
+    rotation: 2
+  - q: -1
+    r: -3
+    value: 0
+    rotation: 2
+  - q: -1
+    r: -2
+    value: 0
+    rotation: 4
+  - q: 2
+    r: -5
+    value: 2
+    rotation: 2
+  - q: -1
+    r: -1
+    value: 0
+    rotation: 4
+  - q: -1
+    r: 0
+    value: 0
+    rotation: 4
+  - q: -2
+    r: -1
+    value: 0
+    rotation: 3
+  - q: -3
+    r: 0
+    value: 0
+    rotation: 3
+  - q: -3
+    r: -1
+    value: 0
+    rotation: 2
+  - q: -2
+    r: -2
+    value: 0
+    rotation: 2
+  - q: -2
+    r: 0
+    value: 1
+    rotation: 2
+  - q: 0
+    r: -4
+    value: 0
+    rotation: 1
+  - q: -3
+    r: -2
+    value: 0
+    rotation: 1
+  - q: -2
+    r: -3
+    value: 0
+    rotation: 2
+  - q: 1
+    r: -4
+    value: 0
+    rotation: 2
+  - q: 0
+    r: -2
+    value: 0
     rotation: 2

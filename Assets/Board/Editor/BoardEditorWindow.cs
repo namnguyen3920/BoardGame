@@ -23,8 +23,15 @@ public class BoardEditorWindow : EditorWindow
     private int hoverQ, hoverR;
     private bool hoverExists;
     private short hoverValue;
+    private byte hoverRotation;
 
     private Dictionary<(int q, int r), int> _lookup = new Dictionary<(int q, int r), int>();
+
+    private bool _rotGestureActive;
+    private int _rotGestureQ, _rotGestureR;
+    private float _rotGestureStartY;
+    private int _rotGestureApplied;
+
 
     private const float BaseCellPixelRadius = 34f;
     private const float SidebarWidth = 156f;
@@ -67,7 +74,6 @@ public class BoardEditorWindow : EditorWindow
     private void OnGUI()
     {
         BuildStyles();
-        HandleKeyboard();
 
         DrawAssetBar();
         if (target == null) return;
@@ -78,6 +84,7 @@ public class BoardEditorWindow : EditorWindow
         DrawPaletteStrip();
         DrawCanvas();
         DrawStatusBar();
+        HandleKeyboard();
 
         if (palette != null && AssetPreview.IsLoadingAssetPreviews())
         {
@@ -267,21 +274,6 @@ public class BoardEditorWindow : EditorWindow
             || eraseBtnRect.Contains(mousePos)
             || removeAllRect.Contains(mousePos));
 
-        Event eCurrent = Event.current;
-        if (hoverValid && hoverExists && eCurrent.type == EventType.ScrollWheel
-            && _lookup.TryGetValue((hoverQ, hoverR), out int scrollRotIdx))
-        {
-            int delta = eCurrent.delta.y > 0 ? 1 : -1;
-            Undo.RecordObject(target, "Rotate Cell");
-            HexCell rc = target.cells[scrollRotIdx];
-            rc.rotation = (byte)((rc.rotation + delta + 6) % 6);
-            target.cells[scrollRotIdx] = rc;
-            EditorUtility.SetDirty(target);
-            BuildLookup();
-            eCurrent.Use();
-            Repaint();
-        }
-
         canvasScroll = EditorGUILayout.BeginScrollView(canvasScroll, GUI.skin.box);
 
         float minPx, maxPx, minPy, maxPy;
@@ -345,10 +337,40 @@ public class BoardEditorWindow : EditorWindow
 
         bool changed = false;
 
+        if (_rotGestureActive)
+        {
+            if (e.type == EventType.MouseDrag && e.button == 2)
+            {
+                float dragDelta = e.mousePosition.y - _rotGestureStartY;
+                int targetStep = Mathf.RoundToInt(dragDelta / (cell * 0.55f));
+                int steps = targetStep - _rotGestureApplied;
+                if (steps != 0 && _lookup.TryGetValue((_rotGestureQ, _rotGestureR), out int gIdx))
+                {
+                    Undo.RecordObject(target, "Rotate Cell");
+                    HexCell gc = target.cells[gIdx];
+                    gc.rotation = (byte)(((gc.rotation + steps) % 6 + 6) % 6);
+                    target.cells[gIdx] = gc;
+                    _rotGestureApplied = targetStep;
+                    EditorUtility.SetDirty(target);
+                    RepaintLiveTile(_rotGestureQ, _rotGestureR);
+                    changed = true;
+                }
+                e.Use();
+                Repaint();
+            }
+            else if (e.type == EventType.MouseUp && e.button == 2)
+            {
+                _rotGestureActive = false;
+                e.Use();
+                Repaint();
+            }
+        }
+
         bool newHoverValid = false;
         int newHoverQ = 0, newHoverR = 0;
         bool newHoverExists = false;
         short newHoverValue = 0;
+        byte newHoverRotation = 0;
 
         for (int q = minQ; q <= maxQ; q++)
         {
@@ -374,19 +396,31 @@ public class BoardEditorWindow : EditorWindow
                     newHoverR = r;
                     newHoverExists = exists;
                     newHoverValue = val;
+                    if (exists) newHoverRotation = rot;
 
-                    if (e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
+                    if (e.type == EventType.MouseDown && e.button == 2 && exists)
+                    {
+                        _rotGestureActive = true;
+                        _rotGestureQ = q;
+                        _rotGestureR = r;
+                        _rotGestureStartY = e.mousePosition.y;
+                        _rotGestureApplied = 0;
+                        e.Use();
+                    }
+                    else if (e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
                     {
                         if (ApplyTool(q, r, exists, val, rot, e.button))
                         {
                             changed = true;
                             BuildLookup();
+                            RepaintLiveTile(q, r);
                         }
                         e.Use();
                     }
                 }
 
-                DrawHexCell(center, cell - pad, val, rot, exists, hit, q == 0 && r == 0);
+                DrawHexCell(center, cell - pad, val, rot, exists, hit, q == 0 && r == 0,
+                    _rotGestureActive && _rotGestureQ == q && _rotGestureR == r);
             }
         }
 
@@ -406,6 +440,7 @@ public class BoardEditorWindow : EditorWindow
         hoverR = newHoverR;
         hoverExists = newHoverExists;
         hoverValue = newHoverValue;
+        hoverRotation = newHoverRotation;
 
         if (changed)
         {
@@ -466,7 +501,7 @@ public class BoardEditorWindow : EditorWindow
         }
     }
 
-    private void DrawHexCell(Vector2 center, float radius, short val, byte rotation, bool exists, bool hover, bool isOrigin)
+    private void DrawHexCell(Vector2 center, float radius, short val, byte rotation, bool exists, bool hover, bool isOrigin, bool isActiveGesture = false)
     {
         bool isRepaint = Event.current.type == EventType.Repaint;
 
@@ -515,12 +550,10 @@ public class BoardEditorWindow : EditorWindow
             float rectH = radius * Mathf.Sqrt(3f);
             Rect thumbRect = new Rect(center.x - rectW * 0.5f, center.y - rectH * 0.5f, rectW, rectH);
             Rect uvRect = new Rect(0f, (1f - HexHeightFrac) * 0.5f, 1f, HexHeightFrac);
+            Matrix4x4 savedMatrix = GUI.matrix;
+            GUIUtility.RotateAroundPivot(rotation * 60f, center);
             GUI.DrawTextureWithTexCoords(thumbRect, thumb, uvRect);
-        }
-        else if (exists && val != 0)
-        {
-            Rect labelRect = new Rect(center.x - radius, center.y - radius, radius * 2, radius * 2);
-            GUI.Label(labelRect, val.ToString(), _cellValueLabel);
+            GUI.matrix = savedMatrix;
         }
 
         if (isRepaint && exists && !hasThumb)
@@ -552,6 +585,11 @@ public class BoardEditorWindow : EditorWindow
             {
                 Handles.color = HoverRingColor;
                 DrawHexOutline(verts, 3f);
+            }
+
+            if (exists && (rotation != 0 || isActiveGesture))
+            {
+                DrawRotationBadge(center, radius, rotation, isActiveGesture);
             }
         }
     }
@@ -603,6 +641,37 @@ public class BoardEditorWindow : EditorWindow
         Vector3 a = new Vector3(tip.x - dir.x * size + perp.x * size * 0.4f, tip.y - dir.y * size + perp.y * size * 0.4f, 0f);
         Vector3 b = new Vector3(tip.x - dir.x * size - perp.x * size * 0.4f, tip.y - dir.y * size - perp.y * size * 0.4f, 0f);
         Handles.DrawAAPolyLine(2f, a, new Vector3(tip.x, tip.y, 0f), b);
+    }
+
+    private static void DrawRotationBadge(Vector2 center, float radius, byte rotation, bool isActive)
+    {
+        float angleDeg = rotation * 60f;
+        Color arcColor = isActive
+            ? new Color(1f, 0.75f, 0.15f, 1f)
+            : new Color(0.55f, 0.88f, 1f, 0.80f);
+
+        float arcR = radius * 0.34f;
+        Handles.color = arcColor;
+
+        if (angleDeg > 1f)
+        {
+            Handles.DrawWireArc(
+                new Vector3(center.x, center.y, 0f),
+                Vector3.forward,
+                new Vector3(1f, 0f, 0f),
+                angleDeg,
+                arcR);
+
+            float tipRad = angleDeg * Mathf.Deg2Rad;
+            Vector2 tip = center + new Vector2(Mathf.Cos(tipRad), Mathf.Sin(tipRad)) * arcR;
+            Vector2 tipDir = new Vector2(-Mathf.Sin(tipRad), Mathf.Cos(tipRad));
+            DrawArrowHead(tip, tipDir, arcR * 0.38f);
+        }
+        else
+        {
+            Handles.DrawWireDisc(new Vector3(center.x, center.y, 0f), Vector3.forward, arcR * 0.4f);
+        }
+
     }
 
     private static void DrawBoardBorder(Vector2 origin, float cell, float cMinPx, float cMaxPx, float cMinPy, float cMaxPy)
@@ -713,7 +782,7 @@ public class BoardEditorWindow : EditorWindow
 
         if (hoverValid)
         {
-            string suffix = hoverExists ? $"v={hoverValue} {NameOf(hoverValue)}" : "(empty — paint to add)";
+            string suffix = hoverExists ? $"v={hoverValue} {NameOf(hoverValue)}    rot={hoverRotation * 60}°" : "(empty — paint to add)";
             GUILayout.Label($"Hover  (q={hoverQ}, r={hoverR})    {suffix}", GUILayout.ExpandWidth(false));
         }
         else
@@ -743,7 +812,26 @@ public class BoardEditorWindow : EditorWindow
             case KeyCode.E: currentTool = Tool.Erase; e.Use(); Repaint(); break;
             case KeyCode.G: currentTool = Tool.Fill; e.Use(); Repaint(); break;
             case KeyCode.I: currentTool = Tool.Eyedropper; e.Use(); Repaint(); break;
-            case KeyCode.R: brushRotation = (byte)((brushRotation + 1) % 6); e.Use(); Repaint(); break;
+            case KeyCode.R:
+                if (hoverValid && hoverExists)
+                {
+                    if (_lookup.TryGetValue((hoverQ, hoverR), out int rIdx))
+                    {
+                        Undo.RecordObject(target, "Rotate Cell");
+                        HexCell rc = target.cells[rIdx];
+                        rc.rotation = (byte)((rc.rotation + 1) % 6);
+                        target.cells[rIdx] = rc;
+                        EditorUtility.SetDirty(target);
+                        RepaintLiveTile(hoverQ, hoverR);
+                    }
+                }
+                else
+                {
+                    brushRotation = (byte)((brushRotation + 1) % 6);
+                }
+                e.Use();
+                Repaint();
+                break;
             case KeyCode.LeftBracket:
                 if (palette != null && palette.Count > 0)
                 {
@@ -909,6 +997,41 @@ public class BoardEditorWindow : EditorWindow
             _previewRT = new RenderTexture(PreviewTextureSize, PreviewTextureSize, 16, RenderTextureFormat.ARGB32);
             _previewRT.antiAliasing = 4;
             _previewRT.Create();
+        }
+    }
+
+    private void RepaintLiveTile(int q, int r)
+    {
+        if (target == null) return;
+        int idx = target.IndexOf(q, r);
+
+        BoardSpawner[] spawners = Object.FindObjectsByType<BoardSpawner>(FindObjectsSortMode.None);
+        foreach (BoardSpawner spawner in spawners)
+        {
+            if (spawner.data != target) continue;
+
+            Transform child = null;
+            for (int i = 0; i < spawner.transform.childCount; i++)
+            {
+                Transform c = spawner.transform.GetChild(i);
+                if (c.name.StartsWith($"Tile_{q}_{r}_"))
+                {
+                    child = c;
+                    break;
+                }
+            }
+            if (child == null) continue;
+
+            Quaternion baseRot = Quaternion.identity;
+            if (idx >= 0 && spawner.palette != null)
+            {
+                GameObject prefab = spawner.palette.Get(target.cells[idx].value);
+                if (prefab != null) baseRot = prefab.transform.localRotation;
+            }
+
+            byte rotation = idx >= 0 ? target.cells[idx].rotation : (byte)0;
+            Undo.RecordObject(child, "Rotate Tile");
+            child.localRotation = baseRot * Quaternion.Euler(0f, rotation * 60f, 0f);
         }
     }
 
