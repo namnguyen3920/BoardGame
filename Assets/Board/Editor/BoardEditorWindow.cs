@@ -268,21 +268,16 @@ public class BoardEditorWindow : EditorWindow
             || removeAllRect.Contains(mousePos));
 
         Event eCurrent = Event.current;
-        if (hoverValid && eCurrent.type == EventType.ScrollWheel)
+        if (hoverValid && hoverExists && eCurrent.type == EventType.ScrollWheel
+            && _lookup.TryGetValue((hoverQ, hoverR), out int scrollRotIdx))
         {
             int delta = eCurrent.delta.y > 0 ? 1 : -1;
-            if (hoverExists && _lookup.TryGetValue((hoverQ, hoverR), out int rotIdx))
-            {
-                Undo.RecordObject(target, "Rotate Cell");
-                HexCell rc = target.cells[rotIdx];
-                rc.rotation = (byte)((rc.rotation + delta + 6) % 6);
-                target.cells[rotIdx] = rc;
-                EditorUtility.SetDirty(target);
-            }
-            else
-            {
-                brushRotation = (byte)((brushRotation + delta + 6) % 6);
-            }
+            Undo.RecordObject(target, "Rotate Cell");
+            HexCell rc = target.cells[scrollRotIdx];
+            rc.rotation = (byte)((rc.rotation + delta + 6) % 6);
+            target.cells[scrollRotIdx] = rc;
+            EditorUtility.SetDirty(target);
+            BuildLookup();
             eCurrent.Use();
             Repaint();
         }
@@ -346,11 +341,10 @@ public class BoardEditorWindow : EditorWindow
             EditorGUI.DrawRect(new Rect(area.x - 9999f, area.y - 9999f, 99999f, 99999f), CanvasBgColor);
             DrawAxisLines(origin, area, cell, minQ, maxQ);
             DrawCenterDecoration(origin, cell, sqrt3);
-            if (hasContent)
-                DrawBoardBorder(origin, cell, contentMinPx, contentMaxPx, contentMinPy, contentMaxPy);
         }
 
         bool changed = false;
+
         bool newHoverValid = false;
         int newHoverQ = 0, newHoverR = 0;
         bool newHoverExists = false;
@@ -558,17 +552,6 @@ public class BoardEditorWindow : EditorWindow
             {
                 Handles.color = HoverRingColor;
                 DrawHexOutline(verts, 3f);
-            }
-
-            if (exists)
-            {
-                float angle = rotation * Mathf.PI / 3f;
-                Vector3 tip = new Vector3(
-                    center.x + Mathf.Cos(angle) * radius * 0.48f,
-                    center.y + Mathf.Sin(angle) * radius * 0.48f, 0f);
-                Handles.color = new Color(1f, 1f, 1f, 0.55f);
-                Handles.DrawAAPolyLine(2f, new Vector3(center.x, center.y, 0f), tip);
-                Handles.DrawSolidDisc(tip, Vector3.forward, radius * 0.07f);
             }
         }
     }
