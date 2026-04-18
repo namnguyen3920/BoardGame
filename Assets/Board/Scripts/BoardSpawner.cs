@@ -35,7 +35,7 @@ public class BoardSpawner : MonoBehaviour
             }
 
             go.transform.localPosition = AxialToLocal(cell.q, cell.r);
-            go.transform.localRotation = prefab.transform.localRotation * Quaternion.Euler(0f, cell.rotation * 60f, 0f);
+            go.transform.localRotation = Quaternion.Euler(0f, cell.rotation * 60f, 0f);
             go.name = $"Tile_{cell.q}_{cell.r}_v{cell.value}";
         }
     }

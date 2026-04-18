@@ -1039,16 +1039,9 @@ public class BoardEditorWindow : EditorWindow
             }
             if (child == null) continue;
 
-            Quaternion baseRot = Quaternion.identity;
-            if (idx >= 0 && spawner.palette != null)
-            {
-                GameObject prefab = spawner.palette.Get(target.cells[idx].value);
-                if (prefab != null) baseRot = prefab.transform.localRotation;
-            }
-
             byte rotation = idx >= 0 ? target.cells[idx].rotation : (byte)0;
             Undo.RecordObject(child, "Rotate Tile");
-            child.localRotation = baseRot * Quaternion.Euler(0f, rotation * 60f, 0f);
+            child.localRotation = Quaternion.Euler(0f, rotation * 60f, 0f);
         }
     }
 
