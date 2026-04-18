@@ -3,7 +3,6 @@ using UnityEngine;
 public class BoardSpawner : MonoBehaviour
 {
     public BoardData data;
-    public TilePalette palette;
 
     [Min(0.01f)] public float hexSize = 1f;
     public bool flatTop = true;
@@ -13,11 +12,13 @@ public class BoardSpawner : MonoBehaviour
     {
         Clear();
 
-        if (data == null || data.cells == null || palette == null) return;
+        if (data?.layers == null || data.layers.Count == 0) return;
+        BoardLayerData baseLayer = data.layers[0];
+        if (baseLayer == null || baseLayer.Cells == null || baseLayer.Palette == null) return;
 
-        foreach (HexCell cell in data.cells)
+        foreach (HexCell cell in baseLayer.Cells)
         {
-            GameObject prefab = palette.Get(cell.value);
+            GameObject prefab = baseLayer.Palette.Get(cell.value);
             if (prefab == null) continue;
 
             GameObject go;
@@ -75,9 +76,9 @@ public class BoardSpawner : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (data == null || data.cells == null) return;
+        if (data?.layers == null || data.layers.Count == 0 || data.layers[0] == null) return;
         Gizmos.color = new Color(0.3f, 0.9f, 0.4f, 0.5f);
-        foreach (HexCell cell in data.cells)
+        foreach (HexCell cell in data.layers[0].Cells)
         {
             Vector3 p = transform.TransformPoint(AxialToLocal(cell.q, cell.r));
             Gizmos.DrawWireSphere(p, hexSize * 0.4f);
