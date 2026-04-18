@@ -7,7 +7,6 @@ public class BoardSpawner : MonoBehaviour
 
     [Min(0.01f)] public float hexSize = 1f;
     public bool flatTop = true;
-    public Vector3 tileRotationOffset = new Vector3(0f, 30f, 0f);
 
     [ContextMenu("Generate")]
     public void Generate()
@@ -36,7 +35,7 @@ public class BoardSpawner : MonoBehaviour
             }
 
             go.transform.localPosition = AxialToLocal(cell.q, cell.r);
-            go.transform.localRotation = prefab.transform.localRotation * Quaternion.Euler(tileRotationOffset);
+            go.transform.localRotation = prefab.transform.localRotation * Quaternion.Euler(0f, cell.rotation * 60f, 0f);
             go.name = $"Tile_{cell.q}_{cell.r}_v{cell.value}";
         }
     }

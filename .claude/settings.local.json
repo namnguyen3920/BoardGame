@@ -3,7 +3,8 @@
     "allow": [
       "Bash(ls \"c:/Repository/BoardGame/Assets/Scripts/\"*.meta \"c:/Repository/BoardGame/Assets/Scripts/Route/Node/\"*.meta)",
       "Bash(find c:/Repository/BoardGame/Assets/Scripts -name *.asmdef)",
-      "Bash(find c:/Repository/BoardGame/Assets/Scripts -name *.cs)"
+      "Bash(find c:/Repository/BoardGame/Assets/Scripts -name *.cs)",
+      "Bash(xargs grep *)"
     ]
   }
 }

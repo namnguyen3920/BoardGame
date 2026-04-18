@@ -7,12 +7,14 @@ public struct HexCell
     public int q;
     public int r;
     public short value;
+    public byte rotation; 
 
-    public HexCell(int q, int r, short value)
+    public HexCell(int q, int r, short value, byte rotation = 0)
     {
         this.q = q;
         this.r = r;
         this.value = value;
+        this.rotation = rotation;
     }
 }
 
@@ -43,20 +45,30 @@ public class BoardData : ScriptableObject
         return true;
     }
 
-    public void Set(int q, int r, short value)
+    public void Set(int q, int r, short value, byte rotation = 0)
     {
         int idx = IndexOf(q, r);
         if (idx >= 0)
         {
             HexCell c = cells[idx];
             c.value = value;
+            c.rotation = rotation;
             cells[idx] = c;
         }
         else
         {
             if (cells == null) cells = new List<HexCell>();
-            cells.Add(new HexCell(q, r, value));
+            cells.Add(new HexCell(q, r, value, rotation));
         }
+    }
+
+    public void SetRotation(int q, int r, byte rotation)
+    {
+        int idx = IndexOf(q, r);
+        if (idx < 0) return;
+        HexCell c = cells[idx];
+        c.rotation = (byte)(rotation % 6);
+        cells[idx] = c;
     }
 
     public bool RemoveAt(int q, int r)

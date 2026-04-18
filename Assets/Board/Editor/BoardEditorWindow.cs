@@ -14,6 +14,7 @@ public class BoardEditorWindow : EditorWindow
     [SerializeField] private Tool currentTool = Tool.Paint;
     [SerializeField] private float zoom = 1f;
     [SerializeField] private int canvasPadding = 3;
+    [SerializeField] private byte brushRotation = 0;
 
     private Vector2 paletteScroll;
     private Vector2 canvasScroll;
@@ -264,6 +265,26 @@ public class BoardEditorWindow : EditorWindow
             || eraseBtnRect.Contains(mousePos)
             || removeAllRect.Contains(mousePos));
 
+        Event eCurrent = Event.current;
+        if (hoverValid && eCurrent.type == EventType.ScrollWheel)
+        {
+            int delta = eCurrent.delta.y > 0 ? 1 : -1;
+            if (hoverExists && _lookup.TryGetValue((hoverQ, hoverR), out int rotIdx))
+            {
+                Undo.RecordObject(target, "Rotate Cell");
+                HexCell rc = target.cells[rotIdx];
+                rc.rotation = (byte)((rc.rotation + delta + 6) % 6);
+                target.cells[rotIdx] = rc;
+                EditorUtility.SetDirty(target);
+            }
+            else
+            {
+                brushRotation = (byte)((brushRotation + delta + 6) % 6);
+            }
+            eCurrent.Use();
+            Repaint();
+        }
+
         canvasScroll = EditorGUILayout.BeginScrollView(canvasScroll, GUI.skin.box);
 
         int minQ = 0, maxQ = 0, minR = 0, maxR = 0;
@@ -323,6 +344,7 @@ public class BoardEditorWindow : EditorWindow
                     && cellIdx >= 0
                     && cellIdx < target.cells.Count;
                 short val = exists ? target.cells[cellIdx].value : (short)0;
+                byte rot = exists ? target.cells[cellIdx].rotation : (byte)0;
 
                 bool hit = !mouseOverOverlay && PointInFlatHex(e.mousePosition, center, cell);
                 if (hit)
@@ -335,7 +357,7 @@ public class BoardEditorWindow : EditorWindow
 
                     if (e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
                     {
-                        if (ApplyTool(q, r, exists, val, e.button))
+                        if (ApplyTool(q, r, exists, val, rot, e.button))
                         {
                             changed = true;
                             BuildLookup();
@@ -344,7 +366,7 @@ public class BoardEditorWindow : EditorWindow
                     }
                 }
 
-                DrawHexCell(center, cell - pad, val, exists, hit, q == 0 && r == 0);
+                DrawHexCell(center, cell - pad, val, rot, exists, hit, q == 0 && r == 0);
             }
         }
 
@@ -424,7 +446,7 @@ public class BoardEditorWindow : EditorWindow
         }
     }
 
-    private void DrawHexCell(Vector2 center, float radius, short val, bool exists, bool hover, bool isOrigin)
+    private void DrawHexCell(Vector2 center, float radius, short val, byte rotation, bool exists, bool hover, bool isOrigin)
     {
         bool isRepaint = Event.current.type == EventType.Repaint;
 
@@ -511,6 +533,17 @@ public class BoardEditorWindow : EditorWindow
                 Handles.color = HoverRingColor;
                 DrawHexOutline(verts, 3f);
             }
+
+            if (exists)
+            {
+                float angle = rotation * Mathf.PI / 3f;
+                Vector3 tip = new Vector3(
+                    center.x + Mathf.Cos(angle) * radius * 0.48f,
+                    center.y + Mathf.Sin(angle) * radius * 0.48f, 0f);
+                Handles.color = new Color(1f, 1f, 1f, 0.55f);
+                Handles.DrawAAPolyLine(2f, new Vector3(center.x, center.y, 0f), tip);
+                Handles.DrawSolidDisc(tip, Vector3.forward, radius * 0.07f);
+            }
         }
     }
 
@@ -533,7 +566,7 @@ public class BoardEditorWindow : EditorWindow
             new Vector3(rLine1.x, rLine1.y, 0f));
     }
 
-    private bool ApplyTool(int q, int r, bool exists, short current, int mouseButton)
+    private bool ApplyTool(int q, int r, bool exists, short current, byte currentRotation, int mouseButton)
     {
         if (mouseButton == 1)
         {
@@ -546,9 +579,9 @@ public class BoardEditorWindow : EditorWindow
         switch (currentTool)
         {
             case Tool.Paint:
-                if (exists && current == (short)brush) return false;
+                if (exists && current == (short)brush && currentRotation == brushRotation) return false;
                 Undo.RecordObject(target, "Paint Cell");
-                target.Set(q, r, (short)brush);
+                target.Set(q, r, (short)brush, brushRotation);
                 return true;
 
             case Tool.Erase:
@@ -618,7 +651,7 @@ public class BoardEditorWindow : EditorWindow
 
         int count = target != null ? target.Count : 0;
         string brushName = NameOf(brush);
-        GUILayout.Label($"Tool: {currentTool}    Brush: v{brush} {brushName}    Cells: {count}", GUILayout.ExpandWidth(false));
+        GUILayout.Label($"Tool: {currentTool}    Brush: v{brush} {brushName}    Rot: {brushRotation * 60}°    Cells: {count}", GUILayout.ExpandWidth(false));
 
         GUILayout.FlexibleSpace();
 
@@ -654,6 +687,7 @@ public class BoardEditorWindow : EditorWindow
             case KeyCode.E: currentTool = Tool.Erase; e.Use(); Repaint(); break;
             case KeyCode.G: currentTool = Tool.Fill; e.Use(); Repaint(); break;
             case KeyCode.I: currentTool = Tool.Eyedropper; e.Use(); Repaint(); break;
+            case KeyCode.R: brushRotation = (byte)((brushRotation + 1) % 6); e.Use(); Repaint(); break;
             case KeyCode.LeftBracket:
                 if (palette != null && palette.Count > 0)
                 {
