@@ -323,7 +323,7 @@ public class BoardEditorWindow : EditorWindow
 
         Vector2 origin = new Vector2(
             area.x + (allocW - w) * 0.5f + cell - minPx * cell,
-            area.y + (allocH - h) * 0.5f + cell - minPy * cell
+            area.y + (allocH - h) * 0.5f + cell + maxPy * cell
         );
 
         Event e = Event.current;
@@ -380,7 +380,7 @@ public class BoardEditorWindow : EditorWindow
             {
                 float px = cell * 1.5f * q;
                 float py = cell * Mathf.Sqrt(3f) * (r + q * 0.5f);
-                Vector2 center = origin + new Vector2(px, py);
+                Vector2 center = origin + new Vector2(px, -py);
 
                 bool exists = _lookup.TryGetValue((q, r), out int cellIdx)
                     && cellIdx >= 0
@@ -619,8 +619,8 @@ public class BoardEditorWindow : EditorWindow
             new Vector3(origin.x, area.yMax, 0f));
 
         float sqrt3 = Mathf.Sqrt(3f);
-        Vector2 rLine0 = origin + new Vector2(cell * 1.5f * (minQ - 0.5f), cell * sqrt3 * (minQ - 0.5f) * 0.5f);
-        Vector2 rLine1 = origin + new Vector2(cell * 1.5f * (maxQ + 0.5f), cell * sqrt3 * (maxQ + 0.5f) * 0.5f);
+        Vector2 rLine0 = origin + new Vector2(cell * 1.5f * (minQ - 0.5f), -cell * sqrt3 * (minQ - 0.5f) * 0.5f);
+        Vector2 rLine1 = origin + new Vector2(cell * 1.5f * (maxQ + 0.5f), -cell * sqrt3 * (maxQ + 0.5f) * 0.5f);
         rLine0.y = Mathf.Clamp(rLine0.y, area.y, area.yMax);
         rLine1.y = Mathf.Clamp(rLine1.y, area.y, area.yMax);
         Handles.DrawAAPolyLine(1.5f,
@@ -635,14 +635,14 @@ public class BoardEditorWindow : EditorWindow
         // q+ axis: screen right
         Vector2 qTip = origin + new Vector2(arrowLen, 0f);
         // r+ axis: hex r direction (x=0, y=sqrt3 per unit)
-        Vector2 rTip = origin + new Vector2(0f, sqrt3 * cell);
+        Vector2 rTip = origin + new Vector2(0f, -sqrt3 * cell);
 
         Handles.color = AxisArrowColor;
         Handles.DrawAAPolyLine(2f, new Vector3(origin.x, origin.y, 0f), new Vector3(qTip.x, qTip.y, 0f));
         Handles.DrawAAPolyLine(2f, new Vector3(origin.x, origin.y, 0f), new Vector3(rTip.x, rTip.y, 0f));
 
         DrawArrowHead(qTip, new Vector2(1f, 0f), cell * 0.20f);
-        DrawArrowHead(rTip, new Vector2(0f, 1f), cell * 0.20f);
+        DrawArrowHead(rTip, new Vector2(0f, -1f), cell * 0.20f);
 
         Handles.Label(new Vector3(qTip.x + 5f, qTip.y - 7f, 0f), "q");
         Handles.Label(new Vector3(rTip.x + 5f, rTip.y - 7f, 0f), "r");
