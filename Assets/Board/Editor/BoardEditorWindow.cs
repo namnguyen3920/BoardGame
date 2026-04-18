@@ -407,6 +407,22 @@ public class BoardEditorWindow : EditorWindow
                         _rotGestureApplied = 0;
                         e.Use();
                     }
+                    else if (e.type == EventType.ScrollWheel && exists)
+                    {
+                        if (_lookup.TryGetValue((q, r), out int sIdx))
+                        {
+                            Undo.RecordObject(target, "Rotate Cell");
+                            HexCell sc = target.cells[sIdx];
+                            int dir = e.delta.y > 0f ? 1 : -1;
+                            sc.rotation = (byte)(((sc.rotation + dir) % 6 + 6) % 6);
+                            target.cells[sIdx] = sc;
+                            EditorUtility.SetDirty(target);
+                            RepaintLiveTile(q, r);
+                            changed = true;
+                            BuildLookup();
+                        }
+                        e.Use();
+                    }
                     else if (e.type == EventType.MouseDown || e.type == EventType.MouseDrag)
                     {
                         if (ApplyTool(q, r, exists, val, rot, e.button))
@@ -776,7 +792,8 @@ public class BoardEditorWindow : EditorWindow
 
         int count = target != null ? target.Count : 0;
         string brushName = NameOf(brush);
-        GUILayout.Label($"Tool: {currentTool}    Brush: v{brush} {brushName}    Rot: {brushRotation * 60}°    Cells: {count}", GUILayout.ExpandWidth(false));
+        int displayRot = (hoverValid && hoverExists) ? hoverRotation * 60 : brushRotation * 60;
+        GUILayout.Label($"Tool: {currentTool}    Brush: v{brush} {brushName}    Rot: {displayRot}°    Cells: {count}", GUILayout.ExpandWidth(false));
 
         GUILayout.FlexibleSpace();
 
