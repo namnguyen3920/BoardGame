@@ -42,6 +42,8 @@ public class BoardEditorWindow : EditorWindow
     private static readonly Color HoverFillColor      = new Color(1f, 0.92f, 0.25f, 0.20f);
     private static readonly Color HoverRingColor      = new Color(1f, 0.92f, 0.25f, 1f);
     private static readonly Color PaletteSelectedBg   = new Color(0.22f, 0.44f, 0.66f, 0.35f);
+    private static readonly Color BoardBorderColor    = new Color(0.55f, 0.75f, 0.95f, 0.50f);
+    private static readonly Color AxisArrowColor      = new Color(0.55f, 0.75f, 0.95f, 0.75f);
 
     private GUIStyle _cellValueLabel;
     private GUIStyle _paletteTitle;
@@ -287,43 +289,65 @@ public class BoardEditorWindow : EditorWindow
 
         canvasScroll = EditorGUILayout.BeginScrollView(canvasScroll, GUI.skin.box);
 
-        int minQ = 0, maxQ = 0, minR = 0, maxR = 0;
+        float minPx, maxPx, minPy, maxPy;
+        float sqrt3 = Mathf.Sqrt(3f);
         if (target.cells != null && target.cells.Count > 0)
         {
-            minQ = int.MaxValue; maxQ = int.MinValue;
-            minR = int.MaxValue; maxR = int.MinValue;
+            minPx = float.MaxValue; maxPx = float.MinValue;
+            minPy = float.MaxValue; maxPy = float.MinValue;
             foreach (var c in target.cells)
             {
-                if (c.q < minQ) minQ = c.q;
-                if (c.q > maxQ) maxQ = c.q;
-                if (c.r < minR) minR = c.r;
-                if (c.r > maxR) maxR = c.r;
+                float px = 1.5f * c.q;
+                float py = sqrt3 * (c.r + c.q * 0.5f);
+                if (px < minPx) minPx = px;
+                if (px > maxPx) maxPx = px;
+                if (py < minPy) minPy = py;
+                if (py > maxPy) maxPy = py;
             }
         }
-        minQ -= canvasPadding;
-        maxQ += canvasPadding;
-        minR -= canvasPadding;
-        maxR += canvasPadding;
+        else
+        {
+            minPx = -1.5f; maxPx = 1.5f;
+            minPy = -sqrt3; maxPy = sqrt3;
+        }
+
+        float contentMinPx = minPx, contentMaxPx = maxPx, contentMinPy = minPy, contentMaxPy = maxPy;
+        bool hasContent = target.cells != null && target.cells.Count > 0;
+
+        minPx -= canvasPadding * 1.5f;
+        maxPx += canvasPadding * 1.5f;
+        minPy -= canvasPadding * sqrt3;
+        maxPy += canvasPadding * sqrt3;
 
         float cell = BaseCellPixelRadius * zoom;
         float pad = cell * 0.10f;
-        int cols = maxQ - minQ + 1;
-        int rows = maxR - minR + 1;
-        float w = cell * (3f * cols + 4f);
-        float h = cell * Mathf.Sqrt(3f) * (rows + cols * 0.5f + 2f);
-        Rect area = GUILayoutUtility.GetRect(w, h);
+        float w = (maxPx - minPx + 2f) * cell;
+        float h = (maxPy - minPy + 2f) * cell;
+
+        const float scrollPad = 28f;
+        float viewW = canvasContainer.width > 1f ? canvasContainer.width - 6f : 0f;
+        float viewH = canvasContainer.height > 1f ? canvasContainer.height - 6f : 0f;
+        float allocW = Mathf.Max(w + scrollPad * 2f, viewW);
+        float allocH = Mathf.Max(h + scrollPad * 2f, viewH);
+        Rect area = GUILayoutUtility.GetRect(allocW, allocH);
+
+        int minQ = Mathf.FloorToInt(minPx / 1.5f);
+        int maxQ = Mathf.CeilToInt(maxPx / 1.5f);
 
         Vector2 origin = new Vector2(
-            area.x + cell * 2f - cell * 1.5f * minQ,
-            area.y + cell * 2f - cell * Mathf.Sqrt(3f) * (minR + minQ * 0.5f)
+            area.x + (allocW - w) * 0.5f + cell - minPx * cell,
+            area.y + (allocH - h) * 0.5f + cell - minPy * cell
         );
 
         Event e = Event.current;
 
         if (e.type == EventType.Repaint)
         {
-            EditorGUI.DrawRect(area, CanvasBgColor);
-            DrawAxisLines(origin, area, cell, minQ, maxQ, minR, maxR);
+            EditorGUI.DrawRect(new Rect(area.x - 9999f, area.y - 9999f, 99999f, 99999f), CanvasBgColor);
+            DrawAxisLines(origin, area, cell, minQ, maxQ);
+            DrawCenterDecoration(origin, cell, sqrt3);
+            if (hasContent)
+                DrawBoardBorder(origin, cell, contentMinPx, contentMaxPx, contentMinPy, contentMaxPy);
         }
 
         bool changed = false;
@@ -334,7 +358,9 @@ public class BoardEditorWindow : EditorWindow
 
         for (int q = minQ; q <= maxQ; q++)
         {
-            for (int r = minR; r <= maxR; r++)
+            int rMin = Mathf.FloorToInt(minPy / sqrt3 - q * 0.5f);
+            int rMax = Mathf.CeilToInt(maxPy / sqrt3 - q * 0.5f);
+            for (int r = rMin; r <= rMax; r++)
             {
                 float px = cell * 1.5f * q;
                 float py = cell * Mathf.Sqrt(3f) * (r + q * 0.5f);
@@ -547,23 +573,70 @@ public class BoardEditorWindow : EditorWindow
         }
     }
 
-    private static void DrawAxisLines(Vector2 origin, Rect area, float cell, int minQ, int maxQ, int minR, int maxR)
+    private static void DrawAxisLines(Vector2 origin, Rect area, float cell, int minQ, int maxQ)
     {
         Handles.color = AxisLineColor;
 
-        float qAxisTopY = origin.y + cell * Mathf.Sqrt(3f) * (minR - 0.5f);
-        float qAxisBotY = origin.y + cell * Mathf.Sqrt(3f) * (maxR + 0.5f);
-        qAxisTopY = Mathf.Max(qAxisTopY, area.y);
-        qAxisBotY = Mathf.Min(qAxisBotY, area.yMax);
         Handles.DrawAAPolyLine(1.5f,
-            new Vector3(origin.x, qAxisTopY, 0f),
-            new Vector3(origin.x, qAxisBotY, 0f));
+            new Vector3(origin.x, area.y, 0f),
+            new Vector3(origin.x, area.yMax, 0f));
 
-        Vector2 rLine0 = origin + new Vector2(cell * 1.5f * (minQ - 0.5f), cell * Mathf.Sqrt(3f) * (minQ - 0.5f) * 0.5f);
-        Vector2 rLine1 = origin + new Vector2(cell * 1.5f * (maxQ + 0.5f), cell * Mathf.Sqrt(3f) * (maxQ + 0.5f) * 0.5f);
+        float sqrt3 = Mathf.Sqrt(3f);
+        Vector2 rLine0 = origin + new Vector2(cell * 1.5f * (minQ - 0.5f), cell * sqrt3 * (minQ - 0.5f) * 0.5f);
+        Vector2 rLine1 = origin + new Vector2(cell * 1.5f * (maxQ + 0.5f), cell * sqrt3 * (maxQ + 0.5f) * 0.5f);
+        rLine0.y = Mathf.Clamp(rLine0.y, area.y, area.yMax);
+        rLine1.y = Mathf.Clamp(rLine1.y, area.y, area.yMax);
         Handles.DrawAAPolyLine(1.5f,
             new Vector3(rLine0.x, rLine0.y, 0f),
             new Vector3(rLine1.x, rLine1.y, 0f));
+    }
+
+    private static void DrawCenterDecoration(Vector2 origin, float cell, float sqrt3)
+    {
+        float arrowLen = cell * 2.0f;
+
+        // q+ axis: screen right
+        Vector2 qTip = origin + new Vector2(arrowLen, 0f);
+        // r+ axis: hex r direction (x=0, y=sqrt3 per unit)
+        Vector2 rTip = origin + new Vector2(0f, sqrt3 * cell);
+
+        Handles.color = AxisArrowColor;
+        Handles.DrawAAPolyLine(2f, new Vector3(origin.x, origin.y, 0f), new Vector3(qTip.x, qTip.y, 0f));
+        Handles.DrawAAPolyLine(2f, new Vector3(origin.x, origin.y, 0f), new Vector3(rTip.x, rTip.y, 0f));
+
+        DrawArrowHead(qTip, new Vector2(1f, 0f), cell * 0.20f);
+        DrawArrowHead(rTip, new Vector2(0f, 1f), cell * 0.20f);
+
+        Handles.Label(new Vector3(qTip.x + 5f, qTip.y - 7f, 0f), "q");
+        Handles.Label(new Vector3(rTip.x + 5f, rTip.y - 7f, 0f), "r");
+
+        Handles.color = new Color(AxisArrowColor.r, AxisArrowColor.g, AxisArrowColor.b, 0.45f);
+        Handles.DrawWireDisc(new Vector3(origin.x, origin.y, 0f), Vector3.forward, cell * 0.30f);
+    }
+
+    private static void DrawArrowHead(Vector2 tip, Vector2 dir, float size)
+    {
+        Vector2 perp = new Vector2(-dir.y, dir.x);
+        Vector3 a = new Vector3(tip.x - dir.x * size + perp.x * size * 0.4f, tip.y - dir.y * size + perp.y * size * 0.4f, 0f);
+        Vector3 b = new Vector3(tip.x - dir.x * size - perp.x * size * 0.4f, tip.y - dir.y * size - perp.y * size * 0.4f, 0f);
+        Handles.DrawAAPolyLine(2f, a, new Vector3(tip.x, tip.y, 0f), b);
+    }
+
+    private static void DrawBoardBorder(Vector2 origin, float cell, float cMinPx, float cMaxPx, float cMinPy, float cMaxPy)
+    {
+        float margin = cell * 0.60f;
+        float x0 = origin.x + cMinPx * cell - margin;
+        float x1 = origin.x + cMaxPx * cell + margin;
+        float y0 = origin.y + cMinPy * cell - margin;
+        float y1 = origin.y + cMaxPy * cell + margin;
+
+        Handles.color = BoardBorderColor;
+        Handles.DrawAAPolyLine(2f,
+            new Vector3(x0, y0, 0f),
+            new Vector3(x1, y0, 0f),
+            new Vector3(x1, y1, 0f),
+            new Vector3(x0, y1, 0f),
+            new Vector3(x0, y0, 0f));
     }
 
     private bool ApplyTool(int q, int r, bool exists, short current, byte currentRotation, int mouseButton)
